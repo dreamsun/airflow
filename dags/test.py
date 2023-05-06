@@ -55,7 +55,7 @@ for i in ret.items:
 
 # DAG 인스턴스화
 dag = DAG(
-    'k8s test',
+    'k8stest',
     default_args=default_args,
     description='echo "k8s test"',
     schedule_interval=timedelta(days=1),
