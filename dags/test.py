@@ -8,6 +8,13 @@ import ssl
 from airflow.operators.bash_operator import BashOperator
 from airflow.utils.dates import days_ago
 
+config = client.Configuration()
+config.api_key['authorization'] = open('/var/run/secrets/kubernetes.io/serviceaccount/token').read()
+config.api_key_prefix['authorization'] = 'Bearer'
+config.host = 'https://kubernetes.default'
+config.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+config.verify_ssl=True
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -32,19 +39,14 @@ default_args = {
     # 'trigger_rule': 'all_success'
 }
 
+
 def k8s_test(
-    config = client.Configuration()
-    config.api_key['authorization'] = open('/var/run/secrets/kubernetes.io/serviceaccount/token').read()
-    config.api_key_prefix['authorization'] = 'Bearer'
-    config.host = 'https://kubernetes.default'
-    config.ssl_ca_cert = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-    config.verify_ssl=True
 
 # api_client는 "2. 연결 정보 설정하기" 항목을 참고한다
 api_client = client.CoreV1Api(client.ApiClient(config))
 
 # 첫 번째 argument에 당신이 사용하는 namespace를 입력한다
-ret = api_client.list_namespaced_pod("namespace 입력", watch=False)
+ret = client.CoreV1Api(client.ApiClient(config)).list_namespaced_pod("namespace 입력", watch=False)
 
 print("Listing pods with their IPs:")
 
