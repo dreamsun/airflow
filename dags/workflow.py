@@ -1,43 +1,46 @@
-from airflow import models
-from airflow.operators.bash_operator import BashOperator
-from datetime import datetime, timedelta
- 
-default_args = {
-        'owner': 'airflow',
-        'depends_on_past': False,
-        'start_date': datetime(2020, 2, 9),
-        'retries': 1,
-        'retry_delay': timedelta(minutes=5)}
- 
-with models.DAG(
-        dag_id='echo_test', description='echo_test',
-        schedule_interval=None,
-        max_active_runs=5,
-        concurrency=10,
-        default_args=default_args) as dag:
- 
-    text_file_path = '/root/airflow/dags'
- 
-    #### create txt file  --> 텍스트 파일을 생성합니다
-    create_text_file_command = f'cd {text_file_path} && echo hello airflow > test.txt'
-    create_text_file = BashOperator(
-            task_id='create_text_file',
-            bash_command=create_text_file_command,
-            dag=dag)
- 
-    #### cat txt file  --> 텍스트 파일을 읽습니다
-    read_text_file_command = f'cd {text_file_path} && cat test.txt'
-    read_text_file = BashOperator(
-            task_id='cat_text_file',
-            bash_command=read_text_file_command,
-            dag=dag)
- 
-    #### remove txt file  --> 텍스트 파일을 삭제합니다.
-    remove_text_file_command = f'cd {text_file_path} && rm test.txt'
-    remove_text_file = BashOperator(
-            task_id='remove_text_file',
-            bash_command=remove_text_file_command,
-            dag=dag)
- 
-    create_text_file >> read_text_file >> remove_text_file  # 이것은 위의 task를 이어주는 줄입니다.
+from datetime import timedelta
 
+# DAG 인스턴스화에 사용하는 라이브러리
+from airflow import DAG
+
+# Operator
+from airflow.operators.bash_operator import BashOperator
+from airflow.utils.dates import days_ago
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': days_ago(2),
+    # 'email': ['airflow@example.com'],
+    # 'email_on_failure': False,
+    # 'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+    # 'queue': 'bash_queue',
+    # 'pool': 'backfill',
+    # 'priority_weight': 10,
+    # 'end_date': datetime(2016, 1, 1),
+    # 'wait_for_downstream': False,
+    # 'dag': dag,
+    # 'sla': timedelta(hours=2),
+    # 'execution_timeout': timedelta(seconds=300),
+    # 'on_failure_callback': some_function,
+    # 'on_success_callback': some_other_function,
+    # 'on_retry_callback': another_function,
+    # 'sla_miss_callback': yet_another_function,
+    # 'trigger_rule': 'all_success'
+}
+
+# DAG 인스턴스화
+dag = DAG(
+    'helloworld',
+    default_args=default_args,
+    description='echo "hello, world!"',
+    schedule_interval=timedelta(days=1),
+)
+
+t1 = BashOperator(
+    task_id='echo_hello_world',
+    bash_command='echo "Hello, World!"',
+    dag=dag,
+)
