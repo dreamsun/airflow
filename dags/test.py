@@ -43,14 +43,12 @@ default_args = {
 def k8s_test(
 
 # api_client는 "2. 연결 정보 설정하기" 항목을 참고한다
-api_client = client.CoreV1Api(client.ApiClient(config))
 
 # 첫 번째 argument에 당신이 사용하는 namespace를 입력한다
-ret = client.CoreV1Api(client.ApiClient(config)).list_namespaced_pod("namespace 입력", watch=False)
 
 print("Listing pods with their IPs:")
 
-for i in ret.items:
+for i in client.CoreV1Api(client.ApiClient(config)).list_namespaced_pod("co", watch=False).items:
     print(f"{i.status.pod_ip}\t{i.metadata.name}")
 )
 
